@@ -95,8 +95,7 @@ app.get('/commentaires/user/:id_user', async (req, res) => {
     let conn;
     conn = await pool.getConnection();
     let id_user = req.params.id_user;
-    await conn.query('SELECT * FROM commentaire WHERE id_user = ?', id_user);
-    const rows = await conn.query('SELECT * FROM commentaire');
+    const rows = await conn.query('SELECT * FROM commentaire WHERE id_user = ?', id_user);
     res.send(rows);
 });
 
@@ -105,27 +104,35 @@ app.get('/commentaires/date/:date', async (req, res) => {
     let conn;
     conn = await pool.getConnection();
     let date = req.params.date;
-    await conn.query(
-        'SELECT * FROM commentaire ' +
-        'INNER JOIN user_commentaire ON commentaire.id = user_commentaire.id_com ' +
-        'INNER JOIN utilisateur ON user_commentaire.id_utilisateur = utilisateur.id ' +
-        'INNER JOIN technologie ON user_commentaire.id_technologie = technologie.id ' +
-        'WHERE commentaire.date < ?',
-        date
-    );
-    const rows = await conn.query('SELECT * FROM commentaire');
+    const rows = await conn.query('SELECT * FROM commentaire WHERE date_creation < ?', date);
     res.send(rows);
 });
 
+// afficher les commentaires d'une technologie
+app.get('/commentaires/technologie/:id_tech', async (req, res) => {
+    let conn;
+    conn = await pool.getConnection();
+    let id_tech = req.params.id_tech;
+    const rows = await conn.query('SELECT * FROM commentaire WHERE id_tech = ?', id_tech);
+    res.send(rows);
+});
 // poster un commentaire
 app.post('/commentaires/:id_tech', async (req, res) => {
     let conn;
     let id_tech = req.params.id_tech;
+    let id_user = req.body.id_user;
+    let date = new Date();
     conn = await pool.getConnection();
-    await conn.query('INSERT INTO commentaire (commentaire, date) VALUES (?, ?)', [req.body.commentaire, req.body.date]);
-    const rows = await conn.query('SELECT * FROM commentaire');
-    res.status(201).json(rows);
+    const rows = await conn.query('INSERT INTO commentaire (commentaire, date_creation, id_user, id_tech) VALUES (?, ?, ?, ?)', [req.body.commentaire, date, id_user, id_tech]);
+    
+    // Convertir les BigInt en String
+    const rowsStringified = JSON.parse(JSON.stringify(rows, (key, value) => 
+        typeof value === 'bigint' ? value.toString() : value
+    ));
+
+    res.status(201).json(rowsStringified);
 });
+
 
 port = 8000;
 app.listen(port, () =>
