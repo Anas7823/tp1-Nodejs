@@ -68,18 +68,17 @@ app.get('/technologie', async (req, res) => {
 // voir une technologie
 app.get('/technologie/:id', async (req, res) => {
     let conn;
-    conn = await pool.getConnection();
-    let id_techno = req.params.id;
-    await conn.query('SELECT * FROM technologie WHERE id = ?', id_techno);
-    const rows = await conn.query('SELECT * FROM technologie');
-    res.send(rows);
-    app.get('/commentaire', async (req, res) => {
-        let conn;
+    try {
         conn = await pool.getConnection();
-        await conn.query('SELECT * FROM commentaire where id_tech = ?', id_techno);                  
-        const rows = await conn.query('SELECT * FROM commentaire');
+        let id = req.params.id;
+        const rows = await conn.query('SELECT * FROM technologie WHERE id = ?', id);
         res.send(rows);
-    });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des données :', error);
+        res.status(500).send('Erreur lors de la récupération des données');
+    } finally {
+        if (conn) conn.release(); // Libérez la connexion dans tous les cas
+    }
 });
 
 // afficher tout les commentaires
