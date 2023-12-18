@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <a href="./techno.html">techno</a>
+    <div id="users"></div>
+
+    ajouter un utilisateur
+    <form method="post" onsubmit="nvUser()">
+        <input type="text" name="nom" id="nomInput" placeholder="nom">
+        <input type="text" name="prenom" id="prenomInput" placeholder="prenom">
+        <input type="text" name="email" id="emailInput" placeholder="email">
+        <input type="submit" value="ajouter">
+    </form>
+    
+</body>
+</html>
+
+<script>
+    // Utilisez AJAX (ici, avec la fonction fetch) pour récupérer les informations
+    fetch('http:localhost:8000/utilisateur')
+      .then(response => response.json())
+      .then(data => {
+        // Manipulez les données reçues
+        data.forEach(user => {
+            document.getElementById('users').innerHTML += `<p>${user.nom} ${user.prenom} ${user.email}</p>`;
+        });
+    });
+
+    function nvUser() {
+    let nom = document.getElementById('nomInput').value;
+    let prenom = document.getElementById('prenomInput').value;
+    let email = document.getElementById('emailInput').value;
+
+    if (nom && prenom && email) {
+        let user = {
+            nom: nom,
+            prenom: prenom,
+            email: email
+        };
+
+        fetch('http://localhost:8000/utilisateur', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+        });
+    } else {
+        console.error('Veuillez remplir tous les champs du formulaire.');
+    }
+}
+
+</script>
